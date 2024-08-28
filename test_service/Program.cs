@@ -14,7 +14,10 @@ namespace test_service
     class Program
     {
 
-
+        /// <summary>
+        /// OER SAKAS
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         { int n = 0;
             while (n == 0)
