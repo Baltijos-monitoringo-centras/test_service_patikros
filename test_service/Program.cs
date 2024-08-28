@@ -15,7 +15,7 @@ namespace test_service
 {
     class Program
     {
-
+       static List<int> gsm_types = new List<int> { 2, 5, 6, 7, 8, 9, 14, 15, 16, 17, 18, 19, 20 };
 
         static void Main(string[] args)
         {
@@ -178,7 +178,8 @@ namespace test_service
                         testtableadapter.Update(test);
                     }
 
-                    if (devtype == 2 || devtype == 5 || devtype == 6 || devtype == 7 || devtype == 8 || devtype == 9)
+                    //if (devtype == 2 || devtype == 5 || devtype == 6 || devtype == 7 || devtype == 8 || devtype == 9)
+                    if (gsm_types.Contains(devtype))
                     {
                         nextRow["status"] = 1;
                         nextRow["result"] = "";
@@ -438,10 +439,10 @@ namespace test_service
 
                 Console.WriteLine(nextRow["date"].ToString());
                 int devtype = Convert.ToInt16(nextRow["devicetype"]);
-                List<int> types = new List<int> { 2, 5, 6, 7, 8, 9, 14, 15, 16, 17, 18, 19, 20 };
+               // List<int> types = new List<int> { 2, 5, 6, 7, 8, 9, 14, 15, 16, 17, 18, 19, 20 };
                 List<int> itc_t = new List<int> { 5, 6, 14, 15, 16 };
                 List<int> md_guard = new List<int> { 17, 19, 20 };
-                if (types.Contains(devtype))
+                if (gsm_types.Contains(devtype))
                 {
                     string issues = "";
                     string deviceid = nextRow["deviceid"].ToString();
@@ -511,6 +512,7 @@ namespace test_service
                         else if (md_guard.Contains(devtype))
                         {
                             res = MdGuardReq(deviceid);
+                            Console.WriteLine("res1: " + res);
                             if (res==null)
                             {
                                 try { res = itcCommands.itcStatus(phone); }
@@ -524,6 +526,7 @@ namespace test_service
                         }
                         smsCount = "<sms>\t\t<alarm>No SMS Messages</alarm>\n</sms>";
                     }
+                    Console.WriteLine("res1: " + res);
                     int n;
                     bool isNumeric = int.TryParse(res, out n);
                     if (!isNumeric)
@@ -612,7 +615,7 @@ namespace test_service
                 }
                 else
                 {
-                    return minutesDifference.ToString();
+                    return ((int) minutesDifference).ToString();
                 }
             }
             else
