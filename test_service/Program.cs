@@ -8,6 +8,8 @@ using System.Xml.Linq;
 using System.Net;
 using System.IO;
 using System.Xml;
+using Newtonsoft.Json.Linq;
+using mdGuard;
 
 namespace test_service
 {
@@ -438,6 +440,7 @@ namespace test_service
                 int devtype = Convert.ToInt16(nextRow["devicetype"]);
                 List<int> types = new List<int> { 2, 5, 6, 7, 8, 9, 14, 15, 16, 17, 18, 19, 20 };
                 List<int> itc_t = new List<int> { 5, 6, 14, 15, 16 };
+                List<int> md_guard = new List<int> { 17, 19, 20 };
                 if (types.Contains(devtype))
                 {
                     string issues = "";
@@ -505,6 +508,15 @@ namespace test_service
                                 catch (Exception e) { Console.WriteLine(e); }
                             }
                         }
+                        else if (md_guard.Contains(devtype))
+                        {
+                            res = MdGuardReq(deviceid);
+                            if (res==null)
+                            {
+                                try { res = itcCommands.itcStatus(phone); }
+                                catch (Exception ex) { Console.WriteLine(ex); res = ""; }
+                            }
+                        }
                         else
                         {
                             try { res = itcCommands.itcStatus(phone); }
@@ -559,6 +571,58 @@ namespace test_service
                 //return reader.ReadToEnd();
                 return reader.ReadToEnd();
             }
+        }
+
+       static string MdGuardReq(string deviceId)
+        {
+            string credentials = "email=oc@mdguard.lt&password=.MhjF3Af^f"; 
+            string comm = "No result.";
+            string latitude = "";
+            string longitude = "";
+            string time = "";
+            try
+            {
+                string location =  MDLocation.Position(deviceId, credentials);
+                Console.WriteLine(location);
+
+                JObject joResponse1 = JObject.Parse(location);
+                latitude = (string)joResponse1["latitude"];
+                longitude = (string)joResponse1["longitude"];
+                time = (string)joResponse1["time"];
+               // comm = "lat: " + latitude + "\r\n" + "lon: " + longitude + "\r\n" + "time: " + time;
+                Console.WriteLine(comm);
+
+            }
+            catch (Exception ex) { Console.WriteLine(ex); }
+            if (DateTime.TryParse(time, out DateTime parsedDateTime))
+            {
+                // Get the current date and time
+                DateTime currentDateTime = DateTime.Now;
+
+                // Calculate the difference between the current date-time and the parsed date-time
+                TimeSpan timeDifference = currentDateTime - parsedDateTime;
+
+                // Define a time span representing one week
+                TimeSpan oneWeek = TimeSpan.FromDays(7);
+                double minutesDifference = timeDifference.TotalMinutes;
+                // Check if the parsed date-time is older than one week
+                if (timeDifference > oneWeek)
+                {
+                    return "Old location, please contact Operating Center";
+                }
+                else
+                {
+                    return minutesDifference.ToString();
+                }
+            }
+            else
+            {
+                return null;
+            }
+
+            
+
+
         }
 
     }
