@@ -14,27 +14,25 @@ namespace test_service
     class Program
     {
 
-        /// <summary>
-        /// OER SAKAS
-        /// </summary>
-        /// <param name="args"></param>
+
         static void Main(string[] args)
-        { int n = 0;
+        {
+            int n = 0;
             while (n == 0)
             {
 
                 //answer();
-                answer2(11,2);
+                answer2(11, 2);
                 answer2(1, 11);
                 answer2(10, 11);
                 travelsim();
                 command();
                 System.Threading.Thread.Sleep(30000);
-             }
+            }
             Console.WriteLine("Done. Press any key to exit...");
             Console.ReadKey();
         }
-static void command()
+        static void command()
         {
             crm crm = new crm();
             crm.testDataTable test = new crm.testDataTable();
@@ -98,10 +96,24 @@ static void command()
                         nextRow.SetModified();
                         testtableadapter.Update(test);
                     }
+                    else if (Convert.ToInt16(nextRow["devicetype"]) == 21)
+                    {
+                        string deviceid = nextRow["deviceid"].ToString().Substring(1);
+                        string user = nextRow["userid"].ToString();
+                        DateTime dt = DateTime.Now;
+                        SxObject sxObject = new SxObject(deviceid, user, dt);
+                        Sx sx = new Sx();
+                        sx.sendSxTest(sxObject);
+                        nextRow["status"] = 10;
+                        nextRow["result"] = "";
+                        nextRow.AcceptChanges();
+                        nextRow.SetModified();
+                        testtableadapter.Update(test);
+                    }
                 }
                 catch (Exception e) { Console.WriteLine(e); }
             }
-            testtableadapter.FillByNew(test,0);
+            testtableadapter.FillByNew(test, 0);
 
             int n = 0;
             foreach (DataRow nextRow in test)
@@ -113,7 +125,8 @@ static void command()
                     Console.WriteLine(nextRow["deviceid"].ToString());
                     int devtype = Convert.ToInt16(nextRow["devicetype"]);
                     if (devtype == 1)
-                    {   string deviceid = nextRow["deviceid"].ToString();
+                    {
+                        string deviceid = nextRow["deviceid"].ToString();
                         try
                         {
                             hideTableAdapter.DeleteQuery(deviceid);
@@ -148,6 +161,20 @@ static void command()
                         nextRow.SetModified();
                         testtableadapter.Update(test);
                     }
+                    else if (Convert.ToInt16(nextRow["devicetype"]) == 21)
+                    {
+                        string deviceid = nextRow["deviceid"].ToString().Substring(1);
+                        string user = nextRow["userid"].ToString();
+                        DateTime dt = DateTime.Now;
+                        SxObject sxObject = new SxObject(deviceid, user, dt);
+                        Sx sx = new Sx();
+                        sx.sendSxTest(sxObject);
+                        nextRow["status"] = 1;
+                        nextRow["result"] = "";
+                        nextRow.AcceptChanges();
+                        nextRow.SetModified();
+                        testtableadapter.Update(test);
+                    }
 
                     if (devtype == 2 || devtype == 5 || devtype == 6 || devtype == 7 || devtype == 8 || devtype == 9)
                     {
@@ -158,12 +185,12 @@ static void command()
                         testtableadapter.Update(test);
                     }
                 }
-                catch(Exception e) { Console.WriteLine(e); }
+                catch (Exception e) { Console.WriteLine(e); }
             }
-        }    
-  
+        }
 
-        static void answer2( int pre, int post)
+
+        static void answer2(int pre, int post)
         {
             crm crm = new crm();
             crm.testDataTable test = new crm.testDataTable();
@@ -186,11 +213,11 @@ static void command()
                 try
                 {
 
-                    
+
                     Console.WriteLine(nextRow["deviceid"].ToString());
                     DateTime signalTime = Convert.ToDateTime(nextRow["date"].ToString());
 
-                    Console.WriteLine("test time: "+signalTime);
+                    Console.WriteLine("test time: " + signalTime);
                     Console.WriteLine("test time dif: " + DateTime.Now.Subtract(signalTime).TotalMinutes);
                     if (DateTime.Now.Subtract(signalTime).TotalMinutes > 6 && Convert.ToInt16(nextRow["devicetype"]) == 1)
                     {
@@ -201,7 +228,8 @@ static void command()
                         nextRow.AcceptChanges();
                         nextRow.SetModified();
                         testtableadapter.Update(test);
-                    } else
+                    }
+                    else
                     if (DateTime.Now.Subtract(signalTime).TotalMinutes > 3 && Convert.ToInt16(nextRow["devicetype"]) == 4)
                     {
                         nextRow["status"] = 2;
@@ -212,8 +240,18 @@ static void command()
                         nextRow.SetModified();
                         testtableadapter.Update(test);
                     }
-                    
-                    else  
+                    if (DateTime.Now.Subtract(signalTime).TotalMinutes > 3 && Convert.ToInt16(nextRow["devicetype"]) == 21)
+                    {
+                        nextRow["status"] = 2;
+                        nextRow["result"] = "";
+                        nextRow["conclusion"] = 0;
+                        nextRow["issues"] = "No answer!\n";
+                        nextRow.AcceptChanges();
+                        nextRow.SetModified();
+                        testtableadapter.Update(test);
+                    }
+
+                    else
                     if (Convert.ToInt16(nextRow["devicetype"]) == 1)
                     {
                         int reply = Convert.ToInt32(nextRow["devicereply"]);
@@ -307,10 +345,10 @@ static void command()
                         }
 
                         Console.WriteLine(res);
-                        Console.WriteLine("issues: "+issues+" count: "+ issues.Length);
+                        Console.WriteLine("issues: " + issues + " count: " + issues.Length);
                         int conclusion = 0;
-                        if (issues.Equals("")||issues.Length<2)
-                        conclusion = 1;
+                        if (issues.Equals("") || issues.Length < 2)
+                            conclusion = 1;
 
                         if (!res.Equals("") && res.Contains("tower"))
                         {
@@ -324,6 +362,8 @@ static void command()
                             testtableadapter.Update(test);
                         }
                     }
+
+                    // pridedu dar tipa 21
                     else if (Convert.ToInt16(nextRow["devicetype"]) == 4)
                     {
                         string deviceid = nextRow["deviceid"].ToString().Substring(1);
@@ -331,7 +371,7 @@ static void command()
                         DateTime dt = Convert.ToDateTime(nextRow["date"]);
                         SxObject sxObject = new SxObject(deviceid, user, dt);
                         Sx sx = new Sx();
-                        string  res= sx.getSxResult(sxObject).Item1;
+                        string res = sx.getSxResult(sxObject).Item1;
                         string issues = sx.getSxResult(sxObject).Item2;
                         int conclusion = 0;
                         if (issues.Equals("") || issues.Length < 2)
@@ -347,11 +387,35 @@ static void command()
                             testtableadapter.Update(test);
                         }
                     }
+                    else if (Convert.ToInt16(nextRow["devicetype"]) == 21)
+                    {
+                        string deviceid = nextRow["deviceid"].ToString().Substring(1);
+                        string user = nextRow["userid"].ToString();
+                        DateTime dt = Convert.ToDateTime(nextRow["date"]);
+                        SxObject sxObject = new SxObject(deviceid, user, dt);
+                        Sx sx = new Sx();
+                        string res = sx.getSxResultBT(sxObject).Item1;
+                        string issues = sx.getSxResultBT(sxObject).Item2;
+                        int conclusion = 0;
+                        if (issues.Equals("") || issues.Length < 2)
+                            conclusion = 1;
+                        if (!res.Equals("") && res.Contains("tower"))
+                        {
+                            nextRow["status"] = post;
+                            nextRow["result"] = res;
+                            nextRow["conclusion"] = conclusion;
+                            nextRow["issues"] = issues;
+                            nextRow.AcceptChanges();
+                            nextRow.SetModified();
+                            testtableadapter.Update(test);
+                        }
+                    }
 
-                    } catch(Exception e) { Console.WriteLine(e); }
+                }
+                catch (Exception e) { Console.WriteLine(e); }
             }
         }
-            static void travelsim()
+        static void travelsim()
         {
             crm crm = new crm();
             crm.testDataTable test = new crm.testDataTable();
@@ -369,11 +433,11 @@ static void command()
             testtableadapter.FillByNew(test, 1);
             foreach (DataRow nextRow in test)
             {
-                
+
                 Console.WriteLine(nextRow["date"].ToString());
                 int devtype = Convert.ToInt16(nextRow["devicetype"]);
-                List<int> types = new List<int> { 2,5,6,7,8,9,14,15,16,17,18,19,20 };
-                List<int> itc_t = new List<int> { 5, 6, 14, 15, 16};
+                List<int> types = new List<int> { 2, 5, 6, 7, 8, 9, 14, 15, 16, 17, 18, 19, 20 };
+                List<int> itc_t = new List<int> { 5, 6, 14, 15, 16 };
                 if (types.Contains(devtype))
                 {
                     string issues = "";
@@ -387,26 +451,26 @@ static void command()
                         res = "Old SIM card, please contact Operating Center";
                         issues = issues + "Old SIM card, please contact Operating Center\n";
 
-                    
-                    
-                    smsCount = "<sms>";
-                    
-                    try
-                    {
-                        smsCount = smsCount+"\n\t<date>"+ DateTime.Now.AddDays(-30)+":</date>\n";
-                        gmSmsTableAdapter.Fill(gmSms, DateTime.Now.AddDays(-30), deviceid);
-                        if (gmSms.Rows.Count < 1)
-                            smsCount = smsCount + "\t\t<alarm>No SMS Messages</alarm>\n";
-                        else
+
+
+                        smsCount = "<sms>";
+
+                        try
                         {
-                            foreach (DataRow row in gmSms)
+                            smsCount = smsCount + "\n\t<date>" + DateTime.Now.AddDays(-30) + ":</date>\n";
+                            gmSmsTableAdapter.Fill(gmSms, DateTime.Now.AddDays(-30), deviceid);
+                            if (gmSms.Rows.Count < 1)
+                                smsCount = smsCount + "\t\t<alarm>No SMS Messages</alarm>\n";
+                            else
                             {
-                                smsCount = smsCount + "\t\t<alarm>" + row["alarm"] + ": " + row["cnt"] + " </alarm>\n";
+                                foreach (DataRow row in gmSms)
+                                {
+                                    smsCount = smsCount + "\t\t<alarm>" + row["alarm"] + ": " + row["cnt"] + " </alarm>\n";
+                                }
                             }
                         }
-                    }
-                    catch { }
-                    smsCount = smsCount + "</sms>";
+                        catch { }
+                        smsCount = smsCount + "</sms>";
                     }
                     else if (phone.StartsWith("280") || phone.StartsWith("228"))
                     {
@@ -417,11 +481,11 @@ static void command()
                             crmTableAdapters.ItcTableAdapter itcTableAdapter = new crmTableAdapters.ItcTableAdapter();
                             crm.MontageDataTable montage = new crm.MontageDataTable();
                             crmTableAdapters.MontageTableAdapter montageTableAdapter = new crmTableAdapters.MontageTableAdapter();
-                           
-                                    try
+
+                            try
                             {
                                 montageTableAdapter.Fill(montage, phone);
-                                itcTableAdapter.Fill(itc,montage[0]["DisplayCode"].ToString());
+                                itcTableAdapter.Fill(itc, montage[0]["DisplayCode"].ToString());
                                 DateTime dateTime = DateTime.Parse(itc[0]["date"].ToString());
                                 int minutesDifference = (int)(DateTime.Now - dateTime).TotalMinutes;
                                 if (minutesDifference >= 0)
@@ -434,7 +498,9 @@ static void command()
                                     catch (Exception ex) { Console.WriteLine(ex); }
                                 }
                             }
-                            catch (Exception ex) { Console.WriteLine(ex);
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
                                 try { res = itcCommands.itcStatus(phone); }
                                 catch (Exception e) { Console.WriteLine(e); }
                             }
@@ -451,8 +517,8 @@ static void command()
                     if (!isNumeric)
                         issues = issues + res;
                     if (!res.Equals(""))
-                {
-                    res = "<device id=\"" + deviceid + "\"><type>2</type><age>" + res + "</age>"+ smsCount + "</device>";
+                    {
+                        res = "<device id=\"" + deviceid + "\"><type>2</type><age>" + res + "</age>" + smsCount + "</device>";
                         try
                         {
                             XDocument doc = XDocument.Parse(res);
@@ -468,21 +534,21 @@ static void command()
                         if (issues.Equals("") || issues.Length < 2)
                             conclusion = 1;
 
-                    nextRow["status"] = 2;
-                    nextRow["result"] = res;
-                    nextRow["conclusion"] = conclusion;
-                    nextRow["issues"] = issues;
-                    nextRow.AcceptChanges();
-                    nextRow.SetModified();
-                    testtableadapter.Update(test);
-                }
+                        nextRow["status"] = 2;
+                        nextRow["result"] = res;
+                        nextRow["conclusion"] = conclusion;
+                        nextRow["issues"] = issues;
+                        nextRow.AcceptChanges();
+                        nextRow.SetModified();
+                        testtableadapter.Update(test);
+                    }
 
                 }
-                
-            }    
+
+            }
         }
 
-       static string Get(string uri)
+        static string Get(string uri)
         {
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
@@ -497,17 +563,17 @@ static void command()
 
     }
     public class SxObject
-        {
-            public string deviceid { get; set; }
-            public string user { get; set; }
+    {
+        public string deviceid { get; set; }
+        public string user { get; set; }
         public DateTime testTime { get; set; }
-        public SxObject(string devid,string usr, DateTime dt)
+        public SxObject(string devid, string usr, DateTime dt)
         {
             deviceid = devid;
             user = usr;
             testTime = dt;
 
         }
-        }
+    }
 
 }
